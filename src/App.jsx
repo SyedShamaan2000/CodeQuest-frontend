@@ -18,6 +18,7 @@ function AppWrapper() {
         const token = localStorage.getItem("token");
         if (!token) {
             navigate("/");
+            localStorage.setItem("token", "token");
         }
     }, [navigate]);
 
