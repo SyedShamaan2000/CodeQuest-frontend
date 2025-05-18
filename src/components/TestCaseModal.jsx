@@ -10,38 +10,44 @@ export default function TestCaseModal({
 }) {
     const [rows, setRows] = useState([]);
 
-    // Format incoming data for display (convert array to string)
+    // Format incoming data for display (ensure input and output are arrays)
     useEffect(() => {
         if (initialCases && initialCases.length) {
             const formatted = initialCases.map((r, i) => ({
                 ...r,
                 input: Array.isArray(r.input)
-                    ? r.input.join(",")
-                    : r.input || "",
+                    ? r.input
+                    : r.input.split(",").map((s) => s.trim()),
                 output: Array.isArray(r.output)
-                    ? r.output.join(",")
-                    : r.output || "",
+                    ? r.output
+                    : r.output.split(",").map((s) => s.trim()),
                 id: i + 1,
             }));
             setRows(formatted);
         } else {
-            setRows([{ id: 1, input: "", output: "" }]);
+            setRows([{ id: 1, input: [""], output: [""] }]);
         }
     }, [initialCases]);
 
     const addRow = () =>
-        setRows((r) => [...r, { id: r.length + 1, input: "", output: "" }]);
+        setRows((r) => [...r, { id: r.length + 1, input: [""], output: [""] }]);
 
     const updateRow = (idx, field, value) =>
         setRows((r) =>
-            r.map((row, i) => (i === idx ? { ...row, [field]: value } : row))
+            r.map((row, i) =>
+                i === idx
+                    ? { ...row, [field]: value.split(",").map((s) => s.trim()) }
+                    : row
+            )
         );
 
     const deleteRow = (idx) => setRows((r) => r.filter((_, i) => i !== idx));
 
     const handleSave = () => {
         const hasEmpty = rows.some(
-            (row) => !row.input.trim() || !row.output.trim()
+            (row) =>
+                !row.input.some((i) => i.trim()) ||
+                !row.output.some((o) => o.trim())
         );
         if (hasEmpty) {
             alert("Please fill in both Input and Output for all test cases.");
@@ -49,12 +55,8 @@ export default function TestCaseModal({
         }
 
         const formattedRows = rows.map((row) => ({
-            input: Array.isArray(row.input)
-                ? row.input.map((s) => s.trim())
-                : row.input.split(",").map((s) => s.trim()),
-            output: Array.isArray(row.output)
-                ? row.output.map((s) => s.trim())
-                : row.output.split(",").map((s) => s.trim()),
+            input: row.input.map((s) => s.trim()),
+            output: row.output.map((s) => s.trim()),
         }));
 
         onSave(formattedRows);
@@ -79,7 +81,7 @@ export default function TestCaseModal({
                             <input
                                 type="text"
                                 placeholder="Input"
-                                value={row.input}
+                                value={row.input.join(",")}
                                 onChange={(e) =>
                                     updateRow(idx, "input", e.target.value)
                                 }
@@ -87,7 +89,7 @@ export default function TestCaseModal({
                             <input
                                 type="text"
                                 placeholder="Output"
-                                value={row.output}
+                                value={row.output.join(",")}
                                 onChange={(e) =>
                                     updateRow(idx, "output", e.target.value)
                                 }

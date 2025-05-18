@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
-import validator from "validator"; // Added validator import
+import validator from "validator";
 import TestCaseModal from "../components/TestCaseModal";
 import "./LandingPage.css";
 import { createTestApi } from "../api/base.api";
-import { format, parseISO } from "date-fns"; // Import date-fns functions
+import { format, parseISO } from "date-fns";
 
 export default function LandingPage() {
     const [test, setTest] = useState({
@@ -11,7 +11,7 @@ export default function LandingPage() {
         company: "",
         email: "",
         duration: "",
-        startTime: format(new Date(), "yyyy-MM-dd'T'HH:mm"), // Initialize with current time in correct format
+        startTime: format(new Date(), "yyyy-MM-dd'T'HH:mm"),
         endTime: "",
         Question: [
             { id: 1, name: "", statement: "", constraints: "", testcases: [] },
@@ -47,7 +47,6 @@ export default function LandingPage() {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        // Prevent invalid duration
         if (name === "duration" && value && parseInt(value, 10) <= 0) {
             return;
         }
@@ -103,7 +102,7 @@ export default function LandingPage() {
     const canSubmit =
         test.name.trim() &&
         test.company.trim() &&
-        test.email && // Guard against undefined email
+        test.email &&
         validator.isEmail(test.email) &&
         test.duration.trim() &&
         parseInt(test.duration, 10) > 0 &&
@@ -132,21 +131,21 @@ export default function LandingPage() {
             duration: parseInt(test.duration, 10),
         };
         try {
-            console.log(testData);
+            // console.log(testData);
             const response = await fetch(createTestApi, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`,
                 },
-                body: JSON.stringify(testData),
+                body: JSON.stringify(testData), // Ensure data is stringified
             });
             if (response.status === 204) {
                 alert("Test created successfully (No Content)!");
             } else if (response.status === 201) {
                 const result = await response.json();
-                console.log("Test created successfully:", result);
-                alert("Test created successfully!");
+                console.log("Test created successfully:", result.data.test._id);
+                // alert("Test created successfully!");
             } else if (!response.ok) {
                 throw new Error("Failed to create test");
             }
@@ -206,7 +205,7 @@ export default function LandingPage() {
                         value={test.email}
                         onChange={handleChange}
                         required
-                        disabled // Email is set from localStorage
+                        disabled
                     />
                 </label>
                 <label>
