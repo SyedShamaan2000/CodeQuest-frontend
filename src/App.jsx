@@ -10,6 +10,7 @@ import Toast from "./components/Toast";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import LandingPage from "./pages/LandingPage";
+import Results from "./pages/Results";
 
 function AppWrapper() {
     const navigate = useNavigate();
@@ -59,6 +60,7 @@ function AppContent() {
                     element={<RegisterPage displayToast={displayToast} />}
                 />
                 <Route path="/landing" element={<LandingPage />} />
+                <Route path="/results" element={<Results />} />
             </Routes>
         </>
     );

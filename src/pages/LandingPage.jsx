@@ -4,6 +4,9 @@ import TestCaseModal from "../components/TestCaseModal";
 import "./LandingPage.css";
 import { createTestApi } from "../api/base.api";
 import { format, parseISO } from "date-fns";
+import { TestIdModal } from "../components/TestIdModal";
+import Results from "./Results";
+import { useNavigate } from "react-router-dom";
 
 export default function LandingPage() {
     const [test, setTest] = useState({
@@ -21,6 +24,9 @@ export default function LandingPage() {
     const [modalVisible, setModalVisible] = useState(false);
     const [activeQId, setActiveQId] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [showTestIdModal, setShowTestIdModal] = useState(false);
+    const [testId, setTestId] = useState(null);
+    const navigate = useNavigate();
 
     // Extract prefix of email and set email in test state
     useEffect(() => {
@@ -131,25 +137,24 @@ export default function LandingPage() {
             duration: parseInt(test.duration, 10),
         };
         try {
-            // console.log(testData);
             const response = await fetch(createTestApi, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`,
                 },
-                body: JSON.stringify(testData), // Ensure data is stringified
+                body: JSON.stringify(testData),
             });
             if (response.status === 204) {
                 alert("Test created successfully (No Content)!");
             } else if (response.status === 201) {
                 const result = await response.json();
                 console.log("Test created successfully:", result.data.test._id);
-                // alert("Test created successfully!");
+                setTestId(result.data.test._id); // Set the test ID
+                setShowTestIdModal(true); // Show the modal
             } else if (!response.ok) {
                 throw new Error("Failed to create test");
             }
-            // Reset form
             setTest({
                 name: "",
                 company: "",
@@ -177,6 +182,14 @@ export default function LandingPage() {
 
     return (
         <div className="page-wrapper">
+            <button onClick={() => navigate("/results")} className="blue">
+                Results
+            </button>
+            <TestIdModal
+                visible={showTestIdModal}
+                testId={testId}
+                onClose={() => setShowTestIdModal(false)}
+            />
             <h1>Welcome, {userName}</h1>
             <div className="test-card">
                 <h2>Create Test</h2>
