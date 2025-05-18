@@ -1,0 +1,17 @@
+.toast-container {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    background: var(--white);
+    box-shadow: 0 4px 12px rgb(0 0 0 / 15%);
+  }
+  .toast-container.success svg { color: var(--green-500); }
+  .toast-container.error svg  { color: var(--red-500); }
+  .toast-message { font-size: 0.875rem; }
+  

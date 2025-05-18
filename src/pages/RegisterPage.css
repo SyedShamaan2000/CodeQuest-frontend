@@ -1,0 +1,12 @@
+.register-page { display: flex; height: 100vh; }
+.visual { flex: 2; background: radial-gradient(circle at center, var(--blue-600) 0%, var(--blue-900) 100%); position: relative; }
+.form-panel { flex: 1; background: var(--white); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; }
+
+/* re-use form styles from LoginPage */
+.form { display: flex; flex-direction: column; gap: 1.25rem; width: 100%; max-width: 320px; }
+.form label { display: flex; flex-direction: column; font-size: 0.875rem; color: #374151; gap: 0.5rem; }
+.form input { padding: 0.5rem 0.75rem; border: 1px solid var(--grey-300); border-radius: 0.375rem; }
+.primary-btn { padding: 0.5rem 1rem; border: none; border-radius: 0.375rem; background: var(--blue-600); color: var(--white); font-weight: 600; cursor: pointer; }
+.primary-btn:hover { background: var(--blue-700); }
+.switch-link { margin-top: 1rem; font-size: 0.875rem; color: var(--blue-600); cursor: pointer; text-align: center; }
+.switch-link:hover { color: var(--blue-700); }
