@@ -20,6 +20,7 @@ export default function LandingPage() {
     const [userName, setUserName] = useState("");
     const [modalVisible, setModalVisible] = useState(false);
     const [activeQId, setActiveQId] = useState(null);
+    const [loading, setLoading] = useState(false);
 
     // Extract prefix of email and set email in test state
     useEffect(() => {
@@ -120,6 +121,7 @@ export default function LandingPage() {
         );
 
     const handleSubmit = async () => {
+        setLoading(true);
         const token = localStorage.getItem("token");
         const userId = localStorage.getItem("userId");
         const testData = {
@@ -169,6 +171,8 @@ export default function LandingPage() {
         } catch (error) {
             console.error("Error creating test:", error);
             alert("Failed to create test. Please try again.");
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -296,7 +300,7 @@ export default function LandingPage() {
                     onClick={handleSubmit}
                     disabled={!canSubmit}
                 >
-                    SUBMIT
+                    {loading ? "SUBMITTING....." : "SUBMIT"}
                 </button>
             </div>
             <TestCaseModal

@@ -15,8 +15,12 @@ export default function TestCaseModal({
         if (initialCases && initialCases.length) {
             const formatted = initialCases.map((r, i) => ({
                 ...r,
-                input: Array.isArray(r.input) ? r.input.join(",") : r.input,
-                output: Array.isArray(r.output) ? r.output.join(",") : r.output,
+                input: Array.isArray(r.input)
+                    ? r.input.join(",")
+                    : r.input || "",
+                output: Array.isArray(r.output)
+                    ? r.output.join(",")
+                    : r.output || "",
                 id: i + 1,
             }));
             setRows(formatted);
@@ -36,11 +40,23 @@ export default function TestCaseModal({
     const deleteRow = (idx) => setRows((r) => r.filter((_, i) => i !== idx));
 
     const handleSave = () => {
-        // Convert input/output strings into arrays on save
+        const hasEmpty = rows.some(
+            (row) => !row.input.trim() || !row.output.trim()
+        );
+        if (hasEmpty) {
+            alert("Please fill in both Input and Output for all test cases.");
+            return;
+        }
+
         const formattedRows = rows.map((row) => ({
-            input: row.input.split(",").map((s) => s.trim()),
-            output: row.output.split(",").map((s) => s.trim()),
+            input: Array.isArray(row.input)
+                ? row.input.map((s) => s.trim())
+                : row.input.split(",").map((s) => s.trim()),
+            output: Array.isArray(row.output)
+                ? row.output.map((s) => s.trim())
+                : row.output.split(",").map((s) => s.trim()),
         }));
+
         onSave(formattedRows);
     };
 
