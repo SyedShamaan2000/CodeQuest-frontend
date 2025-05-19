@@ -8,9 +8,8 @@ import {
 } from "react-router-dom";
 import Toast from "./components/Toast";
 import LoginPage from "./pages/LoginPage";
-import RegisterPage from "./pages/RegisterPage";
-import LandingPage from "./pages/LandingPage";
-import Results from "./pages/Results";
+import ExamComponent from "./components/ExamComponent";
+import CodeRunner from "./pages/CodeRunner";
 
 function AppWrapper() {
     const navigate = useNavigate();
@@ -51,16 +50,7 @@ function AppContent() {
                     path="/"
                     element={<LoginPage displayToast={displayToast} />}
                 />
-                <Route
-                    path="/login"
-                    element={<LoginPage displayToast={displayToast} />}
-                />
-                <Route
-                    path="/register"
-                    element={<RegisterPage displayToast={displayToast} />}
-                />
-                <Route path="/landing" element={<LandingPage />} />
-                <Route path="/results" element={<Results />} />
+                <Route path="/exam" element={<CodeRunner />} />
             </Routes>
         </>
     );
@@ -73,5 +63,8 @@ export default function App() {
                 <AppWrapper />
             </div>
         </Router>
+        // <PythonRunner />
+        // <JavaScriptRunner />
+        // <CodeRunner />
     );
 }

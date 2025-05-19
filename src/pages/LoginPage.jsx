@@ -1,56 +1,58 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./LoginPage.css";
-import { loginUserApi } from "../api/base.api"; // Ensure this path and export are correct
+import { getTestApi } from "../api/base.api";
 
 export default function LoginPage({ displayToast }) {
     const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
+    const [userName, setUserName] = useState("");
+    const [testId, setTestId] = useState("");
     const navigate = useNavigate();
 
     async function loginUserApiFunction(requestBody) {
-        return fetch(loginUserApi, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(requestBody),
+        return fetch(`${getTestApi}/${requestBody.testId}`, {
+            method: "GET",
         });
     }
 
     const submit = (e) => {
         e.preventDefault();
-        if (!email || !password) {
+        if (!email || !userName || !testId) {
             displayToast("Please fill all required fields", "error");
             return;
         }
 
-        const requestBody = { email, password };
+        const requestBody = { email, userName, testId };
 
         loginUserApiFunction(requestBody)
             .then((response) => {
                 if (response.ok) {
                     response.json().then((data) => {
                         console.log("Response data:", data);
-                        if (data.token) {
+                        const testId = data.data.test._id;
+                        // console.log(testId);
+                        // console.log(data.data.test);
+
+                        const fetchedTestData = data.data.test;
+
+                        if (testId) {
                             if (localStorage.getItem("token")) {
                                 localStorage.removeItem("token");
                             }
-                            localStorage.setItem("token", data.token);
+                            localStorage.setItem("token", testId);
                             if (localStorage.getItem("userEmail")) {
                                 localStorage.removeItem("userEmail");
                             }
-                            localStorage.setItem(
-                                "userEmail",
-                                data.data.user.email
-                            );
-                            if (localStorage.getItem("userId")) {
-                                localStorage.removeItem("userId");
+                            localStorage.setItem("userEmail", email);
+                            if (localStorage.getItem("userName")) {
+                                localStorage.removeItem("userName");
                             }
-                            localStorage.setItem("userId", data.data.user._id);
+                            localStorage.setItem("userName", userName);
                         }
                         displayToast("Successfully logged in!");
-                        navigate("/landing");
+                        navigate("/exam", {
+                            state: { testData: fetchedTestData },
+                        });
                     });
                 } else {
                     return response.json().then((errorData) => {
@@ -82,21 +84,23 @@ export default function LoginPage({ displayToast }) {
                         />
                     </label>
                     <label>
-                        Password *
+                        Name *
                         <input
-                            type="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
+                            type="text"
+                            value={userName}
+                            onChange={(e) => setUserName(e.target.value)}
+                        />
+                    </label>
+                    <label>
+                        Test ID *
+                        <input
+                            type="text"
+                            value={testId}
+                            onChange={(e) => setTestId(e.target.value)}
                         />
                     </label>
                     <button className="primary-btn">SUBMIT</button>
                 </form>
-                <p
-                    className="switch-link"
-                    onClick={() => navigate("/register")}
-                >
-                    Create New Account?
-                </p>
             </div>
         </div>
     );
