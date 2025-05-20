@@ -71,10 +71,7 @@ export default function TestCaseModal({
   const handleSave = () => {
     const hasEmpty = rows.some(
       (row) =>
-        !row.input.some((i) => i.trim()) ||
-        !row.output.some((o) => o.trim()) ||
-        !row.javascriptTestCaseCommand.trim() ||
-        !row.pythonTestCaseCommand.trim()
+        !row.input.some((i) => i.trim()) || !row.output.some((o) => o.trim())
     );
     if (hasEmpty) {
       alert(
@@ -130,7 +127,7 @@ export default function TestCaseModal({
                   <Trash2 size={16} />
                 </button>
               </div>
-              <label>
+              {/* <label>
                 JavaScript TestCommand<span className="required">*</span>
                 <textarea
                   name="javascriptTestCaseCommand"
@@ -153,7 +150,7 @@ export default function TestCaseModal({
                   }
                   required
                 />
-              </label>
+              </label> */}
             </React.Fragment>
           ))}
         </div>
