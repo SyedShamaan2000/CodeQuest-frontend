@@ -22,16 +22,18 @@ export default function TestCaseModal({
           ? r.output
           : r.output.split(",").map((s) => s.trim()),
         id: r.id || generateUniqueId(), // Use existing id if available, otherwise generate a new one
-        testCaseCommand: r.testCaseCommand || "", // Ensure testCaseCommand is a string
+        javascriptTestCaseCommand: r.javascriptTestCaseCommand || "", // Ensure testCaseCommand is a string
+        pythonTestCaseCommand: r.pythonTestCaseCommand || "", // Ensure testCaseCommand is a string
       }));
       setRows(formatted);
     } else {
       setRows([
         {
           id: generateUniqueId(),
-          input: [""],
-          output: [""],
-          testCaseCommand: "",
+          input: [""], // Ensure input is an array
+          output: [""], // Ensure output is an array
+          javascriptTestCaseCommand: "",
+          pythonTestCaseCommand: "",
         },
       ]);
     }
@@ -42,9 +44,10 @@ export default function TestCaseModal({
       ...r,
       {
         id: generateUniqueId(),
-        input: [""],
-        output: [""],
-        testCaseCommand: "",
+        input: [""], // Ensure input is an array
+        output: [""], // Ensure output is an array
+        javascriptTestCaseCommand: "",
+        pythonTestCaseCommand: "",
       },
     ]);
 
@@ -55,9 +58,9 @@ export default function TestCaseModal({
           ? {
               ...row,
               [field]:
-                field === "testCaseCommand"
-                  ? value
-                  : value.split(",").map((s) => s.trim()),
+                field === "input" || field === "output"
+                  ? value.split(",").map((s) => s.trim())
+                  : value,
             }
           : row
       )
@@ -70,11 +73,12 @@ export default function TestCaseModal({
       (row) =>
         !row.input.some((i) => i.trim()) ||
         !row.output.some((o) => o.trim()) ||
-        !row.testCaseCommand.trim()
+        !row.javascriptTestCaseCommand.trim() ||
+        !row.pythonTestCaseCommand.trim()
     );
     if (hasEmpty) {
       alert(
-        "Please fill in both Input, Output, and Test Command for all test cases."
+        "Please fill in both Input, Output, and Test Commands for all test cases."
       );
       return;
     }
@@ -82,7 +86,8 @@ export default function TestCaseModal({
     const formattedRows = rows.map((row) => ({
       input: row.input.map((s) => s.trim()),
       output: row.output.map((s) => s.trim()),
-      testCaseCommand: row.testCaseCommand.trim(),
+      javascriptTestCaseCommand: row.javascriptTestCaseCommand.trim(),
+      pythonTestCaseCommand: row.pythonTestCaseCommand.trim(),
     }));
 
     onSave(formattedRows);
@@ -107,13 +112,13 @@ export default function TestCaseModal({
                 <input
                   type="text"
                   placeholder="Input"
-                  value={row.input.join(",")}
+                  value={Array.isArray(row.input) ? row.input.join(",") : ""}
                   onChange={(e) => updateRow(idx, "input", e.target.value)}
                 />
                 <input
                   type="text"
                   placeholder="Output"
-                  value={row.output.join(",")}
+                  value={Array.isArray(row.output) ? row.output.join(",") : ""}
                   onChange={(e) => updateRow(idx, "output", e.target.value)}
                 />
 
@@ -126,13 +131,25 @@ export default function TestCaseModal({
                 </button>
               </div>
               <label>
-                TestCommand<span className="required">*</span>
+                JavaScript TestCommand<span className="required">*</span>
                 <textarea
-                  name="testCaseCommand"
+                  name="javascriptTestCaseCommand"
                   rows="5"
-                  value={row.testCaseCommand}
+                  value={row.javascriptTestCaseCommand}
                   onChange={(e) =>
-                    updateRow(idx, "testCaseCommand", e.target.value)
+                    updateRow(idx, "javascriptTestCaseCommand", e.target.value)
+                  }
+                  required
+                />
+              </label>
+              <label>
+                Python TestCommand<span className="required">*</span>
+                <textarea
+                  name="pythonTestCaseCommand"
+                  rows="5"
+                  value={row.pythonTestCaseCommand}
+                  onChange={(e) =>
+                    updateRow(idx, "pythonTestCaseCommand", e.target.value)
                   }
                   required
                 />

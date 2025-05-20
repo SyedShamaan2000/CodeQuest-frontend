@@ -23,7 +23,8 @@ export default function LandingPage() {
         statement: "",
         constraints: "",
         testcases: [],
-        predefinedStructure: "",
+        javascriptPredefinedStructure: "",
+        pythonPredefinedStructure: "",
       },
     ],
   });
@@ -70,7 +71,8 @@ export default function LandingPage() {
           name: "",
           statement: "",
           constraints: "",
-          predefinedStructure: "",
+          javascriptPredefinedStructure: "",
+          pythonPredefinedStructure: "",
           testcases: [],
         },
       ],
@@ -108,7 +110,8 @@ export default function LandingPage() {
     test.Question.length > 0 &&
     test.Question.every(
       (q) =>
-        q.predefinedStructure &&
+        q.javascriptPredefinedStructure &&
+        q.pythonPredefinedStructure &&
         q.name.trim() &&
         q.statement.trim() &&
         q.constraints.trim() &&
@@ -161,7 +164,8 @@ export default function LandingPage() {
             statement: "",
             constraints: "",
             testcases: [],
-            predefinedStructure: "",
+            javascriptPredefinedStructure: "",
+            pythonPredefinedStructure: "",
           },
         ],
       });
@@ -282,11 +286,21 @@ export default function LandingPage() {
             />
           </label>
           <label>
-            Predefined Structure<span className="required">*</span>
+            JavaScript Predefined Structure <span className="required">*</span>
             <textarea
-              name="predefinedStructure"
+              name="javascriptPredefinedStructure"
               rows="5"
-              value={q.predefinedStructure}
+              value={q.javascriptPredefinedStructure}
+              onChange={(e) => handleQChange(e, q.id)}
+              required
+            />
+          </label>
+          <label>
+            Python Predefined Structure <span className="required">*</span>
+            <textarea
+              name="pythonPredefinedStructure"
+              rows="5"
+              value={q.pythonPredefinedStructure}
               onChange={(e) => handleQChange(e, q.id)}
               required
             />
