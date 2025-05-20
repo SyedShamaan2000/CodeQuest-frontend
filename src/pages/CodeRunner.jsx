@@ -240,7 +240,7 @@ function CodeRunner({ displayToast }) {
   // Clear localStorage when timer reaches 0
   useEffect(() => {
     if (secondsLeft === 0) {
-      displayToast("Test Submitted");
+    //   displayToast("Test Submitted");
       handleMainSubmit();
     }
   }, [secondsLeft]);
@@ -326,6 +326,18 @@ function CodeRunner({ displayToast }) {
     }
   };
 
+  // remove localStorage Data
+  function removeLocalStorageData() {
+    if (localStorage.getItem("token")) {
+        localStorage.removeItem("token");
+      }
+      if (localStorage.getItem("secondsLeft")) {
+        localStorage.removeItem("secondsLeft");
+      }
+      displayToast("Test Submitted");
+      navigate("/submitted");
+  }
+
   const handleMainSubmit = () => {
     const submitData = {
       name: localStorage.getItem("userName"),
@@ -343,16 +355,8 @@ function CodeRunner({ displayToast }) {
     })
       .then((response) => response.json())
       .then((data) => console.log(data))
-      .catch((error) => console.error("Error:", error));
-
-    if (localStorage.getItem("token")) {
-      localStorage.removeItem("token");
-    }
-    if (localStorage.getItem("secondsLeft")) {
-      localStorage.removeItem("secondLeft");
-    }
-    displayToast("Test Submitted");
-    navigate("/submitted");
+      .then(removeLocalStorageData())
+      .catch((error) => console.error("Error:", error))
   };
 
   return (
@@ -404,6 +408,7 @@ function CodeRunner({ displayToast }) {
                 setJsCode(e.target.value);
                 saveBuffer(activeIdx, "js", e.target.value);
               }}
+              onPaste={e => e.preventDefault()}
               disabled={running}
               className={styles.codeEditor}
             />
@@ -414,6 +419,7 @@ function CodeRunner({ displayToast }) {
                 setPyCode(e.target.value);
                 saveBuffer(activeIdx, "py", e.target.value);
               }}
+              onPaste={e => e.preventDefault()}
               disabled={running}
               className={styles.codeEditor}
             />

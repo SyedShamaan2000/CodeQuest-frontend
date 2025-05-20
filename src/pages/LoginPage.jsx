@@ -5,9 +5,9 @@ import { getTestApi } from "../api/base.api";
 
 export default function LoginPage({ displayToast }) {
   /* ---------- local form state ---------- */
-  const [email,    setEmail]    = useState("");
+  const [email, setEmail] = useState("");
   const [userName, setUserName] = useState("");
-  const [testId,   setTestId]   = useState("");
+  const [testId, setTestId] = useState("");
   /* -------------------------------------- */
 
   const navigate = useNavigate();
@@ -25,6 +25,12 @@ export default function LoginPage({ displayToast }) {
     if (!email || !userName || !testId) {
       displayToast("Please fill all required fields", "error");
       return;
+    }
+    if (localStorage.getItem("userEmail")) {
+      localStorage.removeItem("userEmail");
+    }
+    if (localStorage.getItem("userEmail")) {
+      localStorage.removeItem("userName");
     }
 
     fetchTest(testId)
@@ -44,16 +50,18 @@ export default function LoginPage({ displayToast }) {
           }
 
           /* 1️⃣  POP-UP with duration */
-          const duration = test.duration;  // minutes
+          const duration = test.duration; // minutes
           const proceed = window.confirm(
-            `The test ends in ${duration} minute${duration === 1 ? "" : "s"}.\nClick OK to begin.`
+            `The test ends in ${duration} minute${
+              duration === 1 ? "" : "s"
+            }.\nClick OK to begin.`
           );
-          if (!proceed) return;            // user cancelled
+          if (!proceed) return; // user cancelled
 
           /* 2️⃣  Persist details exactly as before */
-          localStorage.setItem("token",     test._id);
+          localStorage.setItem("token", test._id);
           localStorage.setItem("userEmail", email);
-          localStorage.setItem("userName",  userName);
+          localStorage.setItem("userName", userName);
 
           /* 3️⃣  Success toast + navigate */
           displayToast("Successfully logged in!");

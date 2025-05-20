@@ -10,7 +10,11 @@ import Toast from "./components/Toast";
 import LoginPage from "./pages/LoginPage";
 import SubmittedPage from "./pages/SubmittedPage";
 import CodeRunner from "./pages/CodeRunner";
+import FullscreenGuard from "./components/FullscreenGuard"; // ⬅️ NEW import
 
+/* ------------------------------------------------------------------ */
+/*  Auth wrapper – kicks users back to "/" if there is no token        */
+/* ------------------------------------------------------------------ */
 function AppWrapper() {
   const navigate = useNavigate();
 
@@ -18,27 +22,26 @@ function AppWrapper() {
     const token = localStorage.getItem("token");
     if (!token) {
       navigate("/");
-      localStorage.setItem("token", "");
+      localStorage.setItem("token", "token");
     }
   }, [navigate]);
 
   return <AppContent />;
 }
 
+/* ------------------------------------------------------------------ */
+/*  Main app content – routes + toast                                 */
+/* ------------------------------------------------------------------ */
 function AppContent() {
-  // Toast state
   const [toast, setToast] = useState({
     show: false,
     message: "",
     type: "success",
   });
 
-  // Utility to show a toast
   const displayToast = (message, type = "success") => {
     setToast({ show: true, message, type });
-    setTimeout(() => {
-      setToast((t) => ({ ...t, show: false }));
-    }, 3000);
+    setTimeout(() => setToast((t) => ({ ...t, show: false })), 3000);
   };
 
   return (
@@ -46,17 +49,34 @@ function AppContent() {
       <Toast {...toast} />
 
       <Routes>
+        {/* ---------- Public / login route ---------- */}
         <Route path="/" element={<LoginPage displayToast={displayToast} />} />
+
+        {/* ---------- Protected / exam routes ---------- */}
         <Route
           path="/exam"
-          element={<CodeRunner displayToast={displayToast} />}
+          element={
+            <FullscreenGuard>
+              <CodeRunner displayToast={displayToast} />
+            </FullscreenGuard>
+          }
         />
-        <Route path="/submitted" element={<SubmittedPage />} />
+        <Route
+          path="/submitted"
+          element={
+            <FullscreenGuard>
+              <SubmittedPage />
+            </FullscreenGuard>
+          }
+        />
       </Routes>
     </>
   );
 }
 
+/* ------------------------------------------------------------------ */
+/*  Root component with BrowserRouter                                 */
+/* ------------------------------------------------------------------ */
 export default function App() {
   return (
     <Router>
@@ -64,8 +84,5 @@ export default function App() {
         <AppWrapper />
       </div>
     </Router>
-    // <PythonRunner />
-    // <JavaScriptRunner />
-    // <CodeRunner />
   );
 }
