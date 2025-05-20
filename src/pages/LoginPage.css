@@ -77,3 +77,15 @@ select {
     grid-template-columns: 1fr 1fr;
     gap: 20px;
 }
+
+/* show red border for invalid fields */
+input.invalid {
+    border-color: #e53935;
+  }
+  .err-text {
+    display: block;
+    color: #e53935;
+    font-size: 0.8rem;
+    margin-top: 2px;
+  }
+  

@@ -4,13 +4,38 @@ import "./LoginPage.css";
 import { getTestApi } from "../api/base.api";
 
 export default function LoginPage({ displayToast }) {
-  /* ---------- local form state ---------- */
-  const [email, setEmail] = useState("");
-  const [userName, setUserName] = useState("");
-  const [testId, setTestId] = useState("");
-  /* -------------------------------------- */
+  /* ───────── local form state ───────── */
+  const [email,     setEmail]     = useState("");
+  const [userName,  setUserName]  = useState("");
+  const [testId,    setTestId]    = useState("");
+
+  const [errors, setErrors] = useState({});            // { field: message }
+  /* ───────────────────────────────────── */
 
   const navigate = useNavigate();
+
+  /* ---------- simple validators ---------- */
+  const validateEmail = (val) =>
+    /^\S+@\S+\.\S+$/.test(val) ? "" : "Invalid email address";
+
+  const validateName  = (val) =>
+    val.trim().length >= 2 ? "" : "Name must be at least 2 characters";
+
+  // our IDs are Mongo-like 24-char hex; tweak if your rule differs
+  const validateTestId = (val) =>
+    /^[0-9a-fA-F]{24}$/.test(val) ? "" : "Test ID must be a 24-digit hex code";
+
+  const runValidation = () => {
+    const newErrs = {
+      email:    validateEmail(email),
+      userName: validateName(userName),
+      testId:   validateTestId(testId),
+    };
+    setErrors(newErrs);
+    // return true if any error
+    return Object.values(newErrs).some(Boolean);
+  };
+  /* -------------------------------------- */
 
   /* ---------- helper to GET test ---------- */
   async function fetchTest(id) {
@@ -22,16 +47,14 @@ export default function LoginPage({ displayToast }) {
   const submit = (e) => {
     e.preventDefault();
 
-    if (!email || !userName || !testId) {
-      displayToast("Please fill all required fields", "error");
+    if (runValidation()) {
+      displayToast("Please correct the highlighted errors", "error");
       return;
     }
-    if (localStorage.getItem("userEmail")) {
-      localStorage.removeItem("userEmail");
-    }
-    if (localStorage.getItem("userEmail")) {
-      localStorage.removeItem("userName");
-    }
+
+    // clear any stale login data
+    localStorage.removeItem("userEmail");
+    localStorage.removeItem("userName");
 
     fetchTest(testId)
       .then((res) => {
@@ -41,7 +64,6 @@ export default function LoginPage({ displayToast }) {
           });
         }
 
-        /* ---------- successful fetch ---------- */
         return res.json().then((data) => {
           const test = data?.data?.test;
           if (!test) {
@@ -49,25 +71,19 @@ export default function LoginPage({ displayToast }) {
             return;
           }
 
-          /* 1️⃣  POP-UP with duration */
-          const duration = test.duration; // minutes
+          const duration = test.duration;
           const proceed = window.confirm(
-            `The test ends in ${duration} minute${
-              duration === 1 ? "" : "s"
-            }.\nClick OK to begin.`
+            `The test ends in ${duration} minute${duration === 1 ? "" : "s"}.\nClick OK to begin.`
           );
-          if (!proceed) return; // user cancelled
+          if (!proceed) return;
 
-          /* 2️⃣  Persist details exactly as before */
           localStorage.setItem("token", test._id);
           localStorage.setItem("userEmail", email);
           localStorage.setItem("userName", userName);
 
-          /* 3️⃣  Success toast + navigate */
           displayToast("Successfully logged in!");
           navigate("/exam", { state: { testData: test } });
         });
-        /* -------------------------------------- */
       })
       .catch((err) => {
         console.error(err);
@@ -76,36 +92,53 @@ export default function LoginPage({ displayToast }) {
   };
   /* -------------------------------------- */
 
+  /*  Helpers to update state and clear a field’s error when user types  */
+  const handleChange = (setter, validator, key) => (e) => {
+    const val = e.target.value;
+    setter(val);
+    setErrors((prev) => ({ ...prev, [key]: validator(val) }));
+  };
+
   return (
     <div className="login-page">
       <div className="visual" />
+
       <div className="form-panel">
-        <form className="form" onSubmit={submit}>
+        <form className="form" onSubmit={submit} noValidate>
+          {/* Email */}
           <label>
             Email *
             <input
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={handleChange(setEmail, validateEmail, "email")}
+              className={errors.email ? "invalid" : ""}
             />
+            {errors.email && <span className="err-text">{errors.email}</span>}
           </label>
 
+          {/* Name */}
           <label>
             Name *
             <input
               type="text"
               value={userName}
-              onChange={(e) => setUserName(e.target.value)}
+              onChange={handleChange(setUserName, validateName, "userName")}
+              className={errors.userName ? "invalid" : ""}
             />
+            {errors.userName && <span className="err-text">{errors.userName}</span>}
           </label>
 
+          {/* Test ID */}
           <label>
             Test&nbsp;ID *
             <input
               type="text"
               value={testId}
-              onChange={(e) => setTestId(e.target.value)}
+              onChange={handleChange(setTestId, validateTestId, "testId")}
+              className={errors.testId ? "invalid" : ""}
             />
+            {errors.testId && <span className="err-text">{errors.testId}</span>}
           </label>
 
           <button className="primary-btn">SUBMIT</button>
