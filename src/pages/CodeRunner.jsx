@@ -1,185 +1,193 @@
 import React, { useState, useEffect } from "react";
 import styles from "./CodeRunner.module.css";
 import Problem from "../components/Problem";
-import SubmittedPage from "../pages/SubmittedPage"; // adjust path if needed
+import SubmittedPage from "../pages/SubmittedPage";
 import { useLocation } from "react-router-dom";
 import axios from "axios";
 import { executeCodeApi } from "../api/base.api";
 
+/* ───────────────────────────────────────────── */
+
 function CodeRunner() {
-    /* ──────────── TIMER (minutes ➜ seconds) ──────────── */
-    const location = useLocation();
-    const [secondsLeft, setSecondsLeft] = useState(null);
+  const { state }     = useLocation();
+  const testData      = state?.testData ?? null;
+  const questions     = testData?.Question || [];
 
-    // Set initial seconds when testData arrives
-    useEffect(() => {
-        const mins = location.state?.testData?.duration; // e.g. 33
-        if (typeof mins === "number" && mins > 0) {
-            setSecondsLeft(mins * 60);
-        }
-    }, [location.state]);
+  /* ───────── Global timer ───────── */
+  const [secondsLeft, setSecondsLeft] = useState(null);
+  useEffect(() => {
+    const mins = testData?.duration;
+    if (typeof mins === "number" && mins > 0) setSecondsLeft(mins * 60);
+  }, [testData]);
+  useEffect(() => {
+    if (secondsLeft === null) return;
+    const id = setInterval(() => setSecondsLeft(p => (p > 0 ? p - 1 : 0)), 1000);
+    return () => clearInterval(id);
+  }, [secondsLeft]);
+  const mmss = t =>
+    `${String(Math.floor(t / 60)).padStart(2, "0")}:${String(t % 60).padStart(2, "0")}`;
 
-    // Tick every second
-    useEffect(() => {
-        if (secondsLeft === null) return;
-        const id = setInterval(
-            () => setSecondsLeft((p) => (p > 0 ? p - 1 : 0)),
-            1000
-        );
-        return () => clearInterval(id);
-    }, [secondsLeft]);
+  /* ───────── Question navigation ───────── */
+  const [activeIdx, setActiveIdx] = useState(0);
+  const currentQ                  = questions[activeIdx] || null;
 
-    // MM:SS helper
-    const mmss = (tot) =>
-        `${String(Math.floor(tot / 60)).padStart(2, "0")}:${String(
-            tot % 60
-        ).padStart(2, "0")}`;
-    /* ─────────────────────────────────────────────────── */
+  /* ───────── Per-question buffers & results ───────── */
+  const [codeMap,   setCodeMap]   = useState({});   // { idx: { js, py } }
+  const [outputMap, setOutputMap] = useState({});   // { idx: string }
+  const [errorMap,  setErrorMap]  = useState({});   // { idx: string }
 
-    /* ────────── EDITOR / RUNNER STATE ────────── */
-    const [activeTab, setActiveTab] = useState("javascript");
-    const [jsCode, setJsCode] = useState('console.log("Hello JS!");');
-    const [pyCode, setPyCode] = useState('print("Hello Python!")');
-    const [output, setOutput] = useState("");
-    const [isRunning, setIsRunning] = useState(false);
-    const [error, setError] = useState(null);
-    /* ─────────────────────────────────────────── */
+  /* local editors fed from codeMap when question changes */
+  const [jsCode, setJsCode] = useState("");
+  const [pyCode, setPyCode] = useState("");
 
-    /* ───────────── HELPERS / RUNNERS ──────────── */
-    const fmt = (v) =>
-        v === null
-            ? "null"
-            : v === undefined
-            ? "undefined"
-            : typeof v === "object"
-            ? JSON.stringify(v, null, 2)
-            : String(v);
+  useEffect(() => {
+    const entry = codeMap[activeIdx] || { js: "", py: "" };
+    setJsCode(entry.js);
+    setPyCode(entry.py);
+    setOutput(outputMap[activeIdx] || "");
+    setError(errorMap[activeIdx] || null);
+  }, [activeIdx]);          // eslint-disable-line react-hooks/exhaustive-deps
 
-    const runCode = async () => {
-        setIsRunning(true);
-        setOutput("");
-        setError(null);
-        const code = activeTab === "javascript" ? jsCode : pyCode;
-        const requestData = {
-            language: activeTab,
-            version: activeTab === "javascript" ? "18.15.0" : "3.10", // Adjust versions as necessary
-            files: [
-                {
-                    content: code,
-                },
-            ],
-        };
-        console.log(activeTab);
+  const saveBuffer = (idx, lang, val) =>
+    setCodeMap(prev => ({
+      ...prev,
+      [idx]: { js: lang === "js" ? val : prev[idx]?.js || "",
+               py: lang === "py" ? val : prev[idx]?.py || "" }
+    }));
 
-        console.log(requestData);
-        console.log(jsCode);
+  /* ───────── Runner state ───────── */
+  const [activeTab, setActiveTab] = useState("javascript");
+  const [output,    setOutput]    = useState("");
+  const [error,     setError]     = useState(null);
+  const [running,   setRunning]   = useState(false);
 
-        try {
-            const response = await axios.post(executeCodeApi, requestData);
-            const data = response.data;
+  const runCode = async () => {
+    if (!currentQ) return;
+    setRunning(true);
+    setError(null);
+    setOutput("");
 
-            setOutput(data || "No output");
-        } catch (e) {
-            setError(e.response?.data?.error || e.message);
-        } finally {
-            setIsRunning(false);
-        }
+    const code = activeTab === "javascript" ? jsCode : pyCode;
+    const requestData = {
+      language: activeTab,
+      version: activeTab === "javascript" ? "18.15.0" : "3.10",
+      files: [{ content: code }],
     };
 
-    /* ===== Decide which UI to render AFTER all hooks ===== */
-    if (secondsLeft === 0) {
-        return <SubmittedPage />;
+    try {
+      const res  = await axios.post(executeCodeApi, requestData);
+      const data = res.data?.output ?? res.data ?? "No output";
+      setOutput(String(data));
+      // remember result for this question
+      setOutputMap(prev => ({ ...prev, [activeIdx]: String(data) }));
+      setErrorMap(prev  => ({ ...prev, [activeIdx]: null }));
+    } catch (e) {
+      const msg = e.response?.data?.error || e.message;
+      setError(msg);
+      setErrorMap(prev => ({ ...prev, [activeIdx]: msg }));
+    } finally {
+      setRunning(false);
     }
+  };
 
-    return (
-        <div className={styles.pageContainer}>
-            {/* LEFT – problem statement */}
-            <div className={styles.leftContainer}>
-                <Problem testData={location.state?.testData} />
-            </div>
+  /* ───────── End-of-time screen ───────── */
+  if (secondsLeft === 0) return <SubmittedPage />;
 
-            {/* RIGHT – timer + editor/output */}
-            <div className={styles.rightContainer}>
-                {secondsLeft !== null && (
-                    <div className={styles.timer}>
-                        ⏳ Time Left&nbsp;{mmss(secondsLeft)}
-                    </div>
-                )}
+  return (
+    <div className={styles.pageContainer}>
+      {/* ---------- LEFT: prompt & navigation ---------- */}
+      <div className={styles.leftContainer}>
+        <Problem
+          testData={testData}
+          currentIndex={activeIdx}
+          setCurrentIndex={setActiveIdx}
+        />
+      </div>
 
-                {/* Tabs */}
-                <div className={styles.tabs}>
-                    <button
-                        className={`${styles.tab} ${
-                            activeTab === "javascript" ? styles.activeTab : ""
-                        }`}
-                        onClick={() => setActiveTab("javascript")}
-                    >
-                        JavaScript
-                    </button>
-                    <button
-                        className={`${styles.tab} ${
-                            activeTab === "python" ? styles.activeTab : ""
-                        }`}
-                        onClick={() => setActiveTab("python")}
-                    >
-                        Python
-                    </button>
-                </div>
+      {/* ---------- RIGHT: timer + editor ---------- */}
+      <div className={styles.rightContainer}>
+        {secondsLeft !== null && (
+          <div className={styles.timer}>
+            ⏳ Time Left&nbsp;{mmss(secondsLeft)}
+          </div>
+        )}
 
-                {/* Editor */}
-                <div className={styles.codeContainer}>
-                    {activeTab === "javascript" ? (
-                        <textarea
-                            value={jsCode}
-                            onChange={(e) => setJsCode(e.target.value)}
-                            className={styles.codeEditor}
-                            disabled={isRunning}
-                        />
-                    ) : (
-                        <textarea
-                            value={pyCode}
-                            onChange={(e) => setPyCode(e.target.value)}
-                            className={styles.codeEditor}
-                            disabled={isRunning}
-                        />
-                    )}
-
-                    <button
-                        onClick={runCode}
-                        disabled={isRunning}
-                        className={styles.runButton}
-                    >
-                        {isRunning ? (
-                            <>
-                                <span className={styles.spinner}></span>
-                                Running…
-                            </>
-                        ) : (
-                            `Run ${
-                                activeTab === "javascript"
-                                    ? "JavaScript"
-                                    : "Python"
-                            }`
-                        )}
-                    </button>
-                </div>
-
-                {/* Output */}
-                <div className={styles.outputSection}>
-                    <h2 className={styles.outputTitle}>Output:</h2>
-                    {error && (
-                        <div className={styles.errorBox}>
-                            <span className={styles.errorIcon}>⚠️</span> {error}
-                        </div>
-                    )}
-                    <pre className={styles.outputDisplay}>
-                        {output ||
-                            `No output yet. Run your ${activeTab} code to see results.`}
-                    </pre>
-                </div>
-            </div>
+        {/* Tabs */}
+        <div className={styles.tabs}>
+          <button
+            className={`${styles.tab} ${
+              activeTab === "javascript" ? styles.activeTab : ""
+            }`}
+            onClick={() => setActiveTab("javascript")}
+          >
+            JavaScript
+          </button>
+          <button
+            className={`${styles.tab} ${
+              activeTab === "python" ? styles.activeTab : ""
+            }`}
+            onClick={() => setActiveTab("python")}
+          >
+            Python
+          </button>
         </div>
-    );
+
+        {/* Editor */}
+        <div className={styles.codeContainer}>
+          {activeTab === "javascript" ? (
+            <textarea
+              value={jsCode}
+              onChange={e => {
+                setJsCode(e.target.value);
+                saveBuffer(activeIdx, "js", e.target.value);
+              }}
+              disabled={running}
+              className={styles.codeEditor}
+            />
+          ) : (
+            <textarea
+              value={pyCode}
+              onChange={e => {
+                setPyCode(e.target.value);
+                saveBuffer(activeIdx, "py", e.target.value);
+              }}
+              disabled={running}
+              className={styles.codeEditor}
+            />
+          )}
+
+          <button
+            onClick={runCode}
+            disabled={running}
+            className={styles.runButton}
+          >
+            {running ? (
+              <>
+                <span className={styles.spinner}></span>
+                Running…
+              </>
+            ) : (
+              `Run ${activeTab === "javascript" ? "JavaScript" : "Python"}`
+            )}
+          </button>
+        </div>
+
+        {/* Output */}
+        <div className={styles.outputSection}>
+          <h2 className={styles.outputTitle}>Output:</h2>
+          {error && (
+            <div className={styles.errorBox}>
+              <span className={styles.errorIcon}>⚠️</span> {error}
+            </div>
+          )}
+          <pre className={styles.outputDisplay}>
+            {output ||
+              `Run your ${activeTab} code to see results.`}
+          </pre>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export default CodeRunner;
