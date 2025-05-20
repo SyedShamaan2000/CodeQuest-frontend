@@ -5,11 +5,11 @@ import { getTestApi } from "../api/base.api";
 
 export default function LoginPage({ displayToast }) {
   /* ───────── local form state ───────── */
-  const [email,     setEmail]     = useState("");
-  const [userName,  setUserName]  = useState("");
-  const [testId,    setTestId]    = useState("");
+  const [email, setEmail] = useState("");
+  const [userName, setUserName] = useState("");
+  const [testId, setTestId] = useState("");
 
-  const [errors, setErrors] = useState({});            // { field: message }
+  const [errors, setErrors] = useState({}); // { field: message }
   /* ───────────────────────────────────── */
 
   const navigate = useNavigate();
@@ -18,7 +18,7 @@ export default function LoginPage({ displayToast }) {
   const validateEmail = (val) =>
     /^\S+@\S+\.\S+$/.test(val) ? "" : "Invalid email address";
 
-  const validateName  = (val) =>
+  const validateName = (val) =>
     val.trim().length >= 2 ? "" : "Name must be at least 2 characters";
 
   // our IDs are Mongo-like 24-char hex; tweak if your rule differs
@@ -27,9 +27,9 @@ export default function LoginPage({ displayToast }) {
 
   const runValidation = () => {
     const newErrs = {
-      email:    validateEmail(email),
+      email: validateEmail(email),
       userName: validateName(userName),
-      testId:   validateTestId(testId),
+      testId: validateTestId(testId),
     };
     setErrors(newErrs);
     // return true if any error
@@ -66,6 +66,7 @@ export default function LoginPage({ displayToast }) {
 
         return res.json().then((data) => {
           const test = data?.data?.test;
+          // console.log(test);
           if (!test) {
             displayToast("Invalid test data", "error");
             return;
@@ -73,7 +74,9 @@ export default function LoginPage({ displayToast }) {
 
           const duration = test.duration;
           const proceed = window.confirm(
-            `The test ends in ${duration} minute${duration === 1 ? "" : "s"}.\nClick OK to begin.`
+            `The test ends in ${duration} minute${
+              duration === 1 ? "" : "s"
+            }.\nClick OK to begin.`
           );
           if (!proceed) return;
 
@@ -126,7 +129,9 @@ export default function LoginPage({ displayToast }) {
               onChange={handleChange(setUserName, validateName, "userName")}
               className={errors.userName ? "invalid" : ""}
             />
-            {errors.userName && <span className="err-text">{errors.userName}</span>}
+            {errors.userName && (
+              <span className="err-text">{errors.userName}</span>
+            )}
           </label>
 
           {/* Test ID */}
