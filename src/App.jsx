@@ -1,70 +1,71 @@
 // src/App.jsx
 import React, { useState, useEffect } from "react";
 import {
-    BrowserRouter as Router,
-    Routes,
-    Route,
-    useNavigate,
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  useNavigate,
 } from "react-router-dom";
 import Toast from "./components/Toast";
 import LoginPage from "./pages/LoginPage";
-import ExamComponent from "./components/ExamComponent";
+import SubmittedPage from "./pages/SubmittedPage";
 import CodeRunner from "./pages/CodeRunner";
 
 function AppWrapper() {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
 
-    useEffect(() => {
-        const token = localStorage.getItem("token");
-        if (!token) {
-            navigate("/");
-            localStorage.setItem("token", "token");
-        }
-    }, [navigate]);
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/");
+      localStorage.setItem("token", "");
+    }
+  }, [navigate]);
 
-    return <AppContent />;
+  return <AppContent />;
 }
 
 function AppContent() {
-    // Toast state
-    const [toast, setToast] = useState({
-        show: false,
-        message: "",
-        type: "success",
-    });
+  // Toast state
+  const [toast, setToast] = useState({
+    show: false,
+    message: "",
+    type: "success",
+  });
 
-    // Utility to show a toast
-    const displayToast = (message, type = "success") => {
-        setToast({ show: true, message, type });
-        setTimeout(() => {
-            setToast((t) => ({ ...t, show: false }));
-        }, 3000);
-    };
+  // Utility to show a toast
+  const displayToast = (message, type = "success") => {
+    setToast({ show: true, message, type });
+    setTimeout(() => {
+      setToast((t) => ({ ...t, show: false }));
+    }, 3000);
+  };
 
-    return (
-        <>
-            <Toast {...toast} />
+  return (
+    <>
+      <Toast {...toast} />
 
-            <Routes>
-                <Route
-                    path="/"
-                    element={<LoginPage displayToast={displayToast} />}
-                />
-                <Route path="/exam" element={<CodeRunner />} />
-            </Routes>
-        </>
-    );
+      <Routes>
+        <Route path="/" element={<LoginPage displayToast={displayToast} />} />
+        <Route
+          path="/exam"
+          element={<CodeRunner displayToast={displayToast} />}
+        />
+        <Route path="/submitted" element={<SubmittedPage />} />
+      </Routes>
+    </>
+  );
 }
 
 export default function App() {
-    return (
-        <Router>
-            <div className="app-wrapper">
-                <AppWrapper />
-            </div>
-        </Router>
-        // <PythonRunner />
-        // <JavaScriptRunner />
-        // <CodeRunner />
-    );
+  return (
+    <Router>
+      <div className="app-wrapper">
+        <AppWrapper />
+      </div>
+    </Router>
+    // <PythonRunner />
+    // <JavaScriptRunner />
+    // <CodeRunner />
+  );
 }
