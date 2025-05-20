@@ -17,7 +17,14 @@ export default function LandingPage() {
     startTime: format(new Date(), "yyyy-MM-dd'T'HH:mm"),
     endTime: format(new Date(), "yyyy-MM-dd'T'HH:mm"),
     Question: [
-      { id: 1, name: "", statement: "", constraints: "", testcases: [] },
+      {
+        id: 1,
+        name: "",
+        statement: "",
+        constraints: "",
+        testcases: [],
+        predefinedStructure: "",
+      },
     ],
   });
   const [userName, setUserName] = useState("");
@@ -63,6 +70,7 @@ export default function LandingPage() {
           name: "",
           statement: "",
           constraints: "",
+          predefinedStructure: "",
           testcases: [],
         },
       ],
@@ -100,6 +108,7 @@ export default function LandingPage() {
     test.Question.length > 0 &&
     test.Question.every(
       (q) =>
+        q.predefinedStructure &&
         q.name.trim() &&
         q.statement.trim() &&
         q.constraints.trim() &&
@@ -118,6 +127,7 @@ export default function LandingPage() {
       endTime: new Date(test.endTime).toISOString(),
       duration: parseInt(test.duration, 10),
     };
+    console.log(testData);
     try {
       const response = await fetch(createTestApi, {
         method: "POST",
@@ -151,6 +161,7 @@ export default function LandingPage() {
             statement: "",
             constraints: "",
             testcases: [],
+            predefinedStructure: "",
           },
         ],
       });
@@ -266,6 +277,16 @@ export default function LandingPage() {
               name="constraints"
               rows="3"
               value={q.constraints}
+              onChange={(e) => handleQChange(e, q.id)}
+              required
+            />
+          </label>
+          <label>
+            Predefined Structure<span className="required">*</span>
+            <textarea
+              name="predefinedStructure"
+              rows="5"
+              value={q.predefinedStructure}
               onChange={(e) => handleQChange(e, q.id)}
               required
             />
