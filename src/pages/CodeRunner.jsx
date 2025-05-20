@@ -10,11 +10,10 @@ function CodeRunner({ displayToast }) {
   const { state } = useLocation();
   const testData = state?.testData ?? null;
   const questions = testData?.Question || [];
-
-  /* ───────────────────────────────────────────── */
   const [secondsLeft, setSecondsLeft] = useState(null);
   const navigate = useNavigate();
 
+  // Initialize seconds left
   useEffect(() => {
     const mins = testData?.duration;
     if (typeof mins === "number" && mins > 0) setSecondsLeft(mins * 60);
@@ -64,25 +63,24 @@ function CodeRunner({ displayToast }) {
       tot % 60
     ).padStart(2, "0")}`;
 
-  /* ───────── Question navigation ───────── */
+  // Question navigation
   const [activeIdx, setActiveIdx] = useState(0);
   const currentQ = questions[activeIdx] || null;
 
-  /* ───────── Per-question buffers & results ───────── */
+  // Per-question buffers & results
   const [codeMap, setCodeMap] = useState({}); // { idx: { js, py } }
   const [outputMap, setOutputMap] = useState({}); // { idx: string }
   const [errorMap, setErrorMap] = useState({}); // { idx: string }
   const [submittedMap, setSubmittedMap] = useState({}); // { idx: boolean }
+  const [testCaseResults, setTestCaseResults] = useState({}); // { idx: { input: output } }
 
-  /* local editors fed from codeMap when question changes */
+  // Local editors fed from codeMap when question changes
   const [jsCode, setJsCode] = useState("");
   const [pyCode, setPyCode] = useState("");
 
   // Initialize local editors with predefinedStructure when active question changes
   useEffect(() => {
     const entry = codeMap[activeIdx] || { js: "", py: "" };
-
-    // Use predefinedStructure if available
     if (currentQ) {
       setJsCode(currentQ.javascriptPredefinedStructure || entry.js);
       setPyCode(currentQ.pythonPredefinedStructure || entry.py);
@@ -90,7 +88,6 @@ function CodeRunner({ displayToast }) {
       setJsCode(entry.js);
       setPyCode(entry.py);
     }
-
     setOutput(outputMap[activeIdx] || "");
     setError(errorMap[activeIdx] || null);
   }, [activeIdx, currentQ]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -104,69 +101,68 @@ function CodeRunner({ displayToast }) {
       },
     }));
 
-  /* ───────── Runner state ───────── */
+  // Runner state
   const [activeTab, setActiveTab] = useState("javascript");
   const [output, setOutput] = useState("");
   const [error, setError] = useState(null);
   const [running, setRunning] = useState(false);
 
-  const runCode = async () => {
-    if (!currentQ) return;
+  const runCodeForInput = async (code, language, input, expectedOutput) => {
     setRunning(true);
     setError(null);
     setOutput("");
-    const code = activeTab === "javascript" ? jsCode : pyCode;
     const requestData = {
-      language: activeTab,
-      version: activeTab === "javascript" ? "18.15.0" : "3.10",
+      language: language,
+      version: language === "javascript" ? "18.15.0" : "3.10",
       files: [{ content: code }],
+      input: input.join().split("[")[1].split("]")[0],
+      expectedOutput: expectedOutput.join().split("[")[1].split("]")[0],
     };
+    console.log("type of input is:", typeof input);
     try {
       const res = await axios.post(executeCodeApi, requestData);
       const data = res.data?.output ?? res.data ?? "No output";
       setOutput(String(data));
-      // remember result for this question
-      setOutputMap((prev) => ({ ...prev, [activeIdx]: String(data) }));
-      setErrorMap((prev) => ({ ...prev, [activeIdx]: null }));
+      return String(data);
     } catch (e) {
       const msg = e.response?.data?.error || e.message;
       setError(msg);
-      setErrorMap((prev) => ({ ...prev, [activeIdx]: msg }));
+      return msg;
     } finally {
       setRunning(false);
     }
   };
 
-  const submitQuestion = async () => {
+  const runAllTestCases = async () => {
     if (!currentQ) return;
-    setRunning(true);
-    setError(null);
-    setOutput("");
     const code = activeTab === "javascript" ? jsCode : pyCode;
-    const requestData = {
-      language: activeTab,
-      version: activeTab === "javascript" ? "18.15.0" : "3.10",
-      files: [{ content: code }],
-    };
-    try {
-      const res = await axios.post(executeCodeApi, requestData);
-      const data = res.data?.output ?? res.data ?? "No output";
-      setOutput(String(data));
-      // remember result for this question
-      setOutputMap((prev) => ({ ...prev, [activeIdx]: String(data) }));
-      setErrorMap((prev) => ({ ...prev, [activeIdx]: null }));
-      // Mark question as submitted
-      setSubmittedMap((prev) => ({ ...prev, [activeIdx]: true }));
-    } catch (e) {
-      const msg = e.response?.data?.error || e.message;
-      setError(msg);
-      setErrorMap((prev) => ({ ...prev, [activeIdx]: msg }));
-    } finally {
-      setRunning(false);
+    const language = activeTab;
+    const testCases = currentQ.testcases;
+    // console.log("testcases", typeof testCases);
+    let results = {};
+
+    for (const testCase of testCases) {
+      const input = testCase.input;
+      const expectedOutput = testCase.output;
+      const actualOutput = await runCodeForInput(
+        code,
+        language,
+        input,
+        expectedOutput
+      );
+      results[input.join(",")] = actualOutput;
     }
+
+    setTestCaseResults((prev) => ({
+      ...prev,
+      [activeIdx]: results,
+    }));
+
+    // Mark question as submitted
+    setSubmittedMap((prev) => ({ ...prev, [activeIdx]: true }));
   };
 
-  // remove localStorage Data
+  // Remove localStorage Data
   function removeLocalStorageData() {
     if (localStorage.getItem("token")) {
       localStorage.removeItem("token");
@@ -183,6 +179,7 @@ function CodeRunner({ displayToast }) {
       name: localStorage.getItem("userName"),
       email: localStorage.getItem("userEmail"),
       score: 0,
+      testCaseResults: testCaseResults,
     };
     const testId = localStorage.getItem("token");
     fetch(`${submitTestApi}/${testId}`, {
@@ -200,8 +197,7 @@ function CodeRunner({ displayToast }) {
 
   return (
     <div className={styles.pageContainer}>
-      {/* ---------- LEFT: prompt & navigation ---------- */}
-
+      {/* LEFT: prompt & navigation */}
       <div className={styles.leftContainer}>
         <Problem
           testData={testData}
@@ -209,7 +205,7 @@ function CodeRunner({ displayToast }) {
           setCurrentIndex={setActiveIdx}
         />
       </div>
-      {/* ---------- RIGHT: timer + editor ---------- */}
+      {/* RIGHT: timer + editor */}
       <div className={styles.rightContainer}>
         {secondsLeft !== null && (
           <div className={styles.timer}>
@@ -248,7 +244,6 @@ function CodeRunner({ displayToast }) {
                 setJsCode(e.target.value);
                 saveBuffer(activeIdx, "js", e.target.value);
               }}
-              onPaste={(e) => e.preventDefault()}
               disabled={running}
               className={styles.codeEditor}
             />
@@ -259,14 +254,13 @@ function CodeRunner({ displayToast }) {
                 setPyCode(e.target.value);
                 saveBuffer(activeIdx, "py", e.target.value);
               }}
-              onPaste={(e) => e.preventDefault()}
               disabled={running}
               className={styles.codeEditor}
             />
           )}
           <button
-            onClick={runCode}
-            disabled={running}
+            onClick={runAllTestCases}
+            disabled={running || submittedMap[activeIdx]}
             className={styles.runButton}
           >
             {running ? (
@@ -275,7 +269,7 @@ function CodeRunner({ displayToast }) {
                 Running…
               </>
             ) : (
-              `Run ${activeTab === "javascript" ? "JavaScript" : "Python"}`
+              `Run All Test Cases`
             )}
           </button>
         </div>
@@ -291,7 +285,7 @@ function CodeRunner({ displayToast }) {
             {output || `Run your ${activeTab} code to see results.`}
           </pre>
           <button
-            onClick={submitQuestion}
+            onClick={runAllTestCases}
             disabled={running || submittedMap[activeIdx]}
             className={styles.submitBtn}
           >
@@ -303,7 +297,7 @@ function CodeRunner({ displayToast }) {
             ) : submittedMap[activeIdx] ? (
               "Submitted"
             ) : (
-              "Submit"
+              "Run All Test Cases"
             )}
           </button>
         </div>

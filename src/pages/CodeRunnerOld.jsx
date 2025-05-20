@@ -1,22 +1,52 @@
-// // src/components/CodeRunner.jsx
 // import React, { useState, useEffect } from "react";
 // import styles from "./CodeRunner.module.css";
 // import Problem from "../components/Problem";
-// import SubmittedPage from "../pages/SubmittedPage";       // adjust path if needed
-// import { useLocation } from "react-router-dom";
+// import SubmittedPage from "./SubmittedPage";
+// import axios from "axios";
+// import { executeCodeApi, submitTestApi } from "../api/base.api";
+// import { useLocation, useNavigate } from "react-router-dom";
 
-// function CodeRunner() {
-//   /* ──────────── TIMER (minutes ➜ seconds) ──────────── */
-//   const location = useLocation();
+// function CodeRunner({ displayToast }) {
+//   const { state } = useLocation();
+//   const testData = state?.testData ?? null;
+//   const questions = testData?.Question || [];
+
+//   /* ───────────────────────────────────────────── */
 //   const [secondsLeft, setSecondsLeft] = useState(null);
+//   const navigate = useNavigate();
 
-//   // Set initial seconds when testData arrives
 //   useEffect(() => {
-//     const mins = location.state?.testData?.duration;        // e.g. 33
-//     if (typeof mins === "number" && mins > 0) {
-//       setSecondsLeft(mins * 60);
+//     const mins = testData?.duration;
+//     if (typeof mins === "number" && mins > 0) setSecondsLeft(mins * 60);
+//   }, [testData]);
+
+//   // Load initial seconds from localStorage if available, otherwise use testData duration
+//   useEffect(() => {
+//     const storedSeconds = localStorage.getItem("secondsLeft");
+//     if (storedSeconds) {
+//       setSecondsLeft(Number(storedSeconds));
+//     } else {
+//       const mins = testData?.duration; // e.g. 33
+//       if (typeof mins === "number" && mins > 0) {
+//         setSecondsLeft(mins * 60);
+//         localStorage.setItem("secondsLeft", mins * 60); // Store initial duration
+//       }
 //     }
-//   }, [location.state]);
+//   }, [testData]);
+
+//   // Update localStorage whenever secondsLeft changes
+//   useEffect(() => {
+//     if (secondsLeft !== null) {
+//       localStorage.setItem("secondsLeft", secondsLeft);
+//     }
+//   }, [secondsLeft]);
+
+//   // Clear localStorage when timer reaches 0
+//   useEffect(() => {
+//     if (secondsLeft === 0) {
+//       handleMainSubmit();
+//     }
+//   }, [secondsLeft]);
 
 //   // Tick every second
 //   useEffect(() => {
@@ -33,146 +63,163 @@
 //     `${String(Math.floor(tot / 60)).padStart(2, "0")}:${String(
 //       tot % 60
 //     ).padStart(2, "0")}`;
-//   /* ─────────────────────────────────────────────────── */
 
-//   /* ────────── EDITOR / RUNNER STATE ────────── */
-//   const [activeTab, setActiveTab] = useState("javascript");
-//   const [jsCode, setJsCode] = useState('console.log("Hello JS!");');
-//   const [pyCode, setPyCode] = useState('print("Hello Python!")');
-//   const [output, setOutput] = useState("");
-//   const [isRunning, setIsRunning] = useState(false);
-//   const [pyodide, setPyodide] = useState(null);
-//   const [pyodideLoading, setPyodideLoading] = useState(false);
-//   const [error, setError] = useState(null);
-//   /* ─────────────────────────────────────────── */
+//   /* ───────── Question navigation ───────── */
+//   const [activeIdx, setActiveIdx] = useState(0);
+//   const currentQ = questions[activeIdx] || null;
 
-//   /* ────────── LOAD PYODIDE ON DEMAND ────────── */
+//   /* ───────── Per-question buffers & results ───────── */
+//   const [codeMap, setCodeMap] = useState({}); // { idx: { js, py } }
+//   const [outputMap, setOutputMap] = useState({}); // { idx: string }
+//   const [errorMap, setErrorMap] = useState({}); // { idx: string }
+//   const [submittedMap, setSubmittedMap] = useState({}); // { idx: boolean }
+
+//   /* local editors fed from codeMap when question changes */
+//   const [jsCode, setJsCode] = useState("");
+//   const [pyCode, setPyCode] = useState("");
+
+//   // Initialize local editors with predefinedStructure when active question changes
 //   useEffect(() => {
-//     if (activeTab === "python" && !pyodide && !pyodideLoading) loadPyodide();
-//   }, [activeTab, pyodide, pyodideLoading]);
+//     const entry = codeMap[activeIdx] || { js: "", py: "" };
 
-//   async function loadPyodide() {
-//     setPyodideLoading(true);
-//     setOutput("Loading Python environment…");
-//     setError(null);
-//     try {
-//       if (typeof window.loadPyodide === "undefined") {
-//         await new Promise((res, rej) => {
-//           const s = document.createElement("script");
-//           s.src = "https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js";
-//           s.async = true;
-//           s.onload = res;
-//           s.onerror = () => rej(new Error("Pyodide load failed"));
-//           document.head.appendChild(s);
-//         });
-//       }
-//       const inst = await window.loadPyodide({
-//         indexURL: "https://cdn.jsdelivr.net/pyodide/v0.23.4/full/",
-//       });
-//       setPyodide(inst);
-//       setOutput("Python ready!");
-//     } catch (e) {
-//       setError(e.message);
-//     } finally {
-//       setPyodideLoading(false);
+//     // Use predefinedStructure if available
+//     if (currentQ) {
+//       setJsCode(currentQ.javascriptPredefinedStructure || entry.js);
+//       setPyCode(currentQ.pythonPredefinedStructure || entry.py);
+//     } else {
+//       setJsCode(entry.js);
+//       setPyCode(entry.py);
 //     }
-//   }
-//   /* ─────────────────────────────────────────── */
 
-//   /* ───────────── HELPERS / RUNNERS ──────────── */
-//   const fmt = (v) =>
-//     v === null
-//       ? "null"
-//       : v === undefined
-//       ? "undefined"
-//       : typeof v === "object"
-//       ? JSON.stringify(v, null, 2)
-//       : String(v);
+//     setOutput(outputMap[activeIdx] || "");
+//     setError(errorMap[activeIdx] || null);
+//   }, [activeIdx, currentQ]); // eslint-disable-line react-hooks/exhaustive-deps
 
-//   const runJavaScript = async () => {
-//     setIsRunning(true);
+//   const saveBuffer = (idx, lang, val) =>
+//     setCodeMap((prev) => ({
+//       ...prev,
+//       [idx]: {
+//         js: lang === "js" ? val : prev[idx]?.js || "",
+//         py: lang === "py" ? val : prev[idx]?.py || "",
+//       },
+//     }));
+
+//   /* ───────── Runner state ───────── */
+//   const [activeTab, setActiveTab] = useState("javascript");
+//   const [output, setOutput] = useState("");
+//   const [error, setError] = useState(null);
+//   const [running, setRunning] = useState(false);
+
+//   const runCode = async () => {
+//     if (!currentQ) return;
+//     setRunning(true);
+//     setError(null);
 //     setOutput("");
-//     setError(null);
+//     const code = activeTab === "javascript" ? jsCode : pyCode;
+//     const requestData = {
+//       language: activeTab,
+//       version: activeTab === "javascript" ? "18.15.0" : "3.10",
+//       files: [{ content: code }],
+//     };
 //     try {
-//       const original = { ...console };
-//       let buf = [];
-//       ["log", "warn", "error", "info"].forEach((lvl) => {
-//         console[lvl] = (...a) => {
-//           original[lvl](...a);
-//           buf.push(
-//             (lvl === "log" ? "" : lvl.toUpperCase() + ": ") +
-//               a.map(fmt).join(" ")
-//           );
-//         };
-//       });
-
-//       const res = await new Function(
-//         `(async () => { try { ${jsCode} } catch(e){ console.error(e); } })()`
-//       )();
-//       if (res !== undefined) buf.push("Return: " + fmt(res));
-//       setOutput(buf.join("\n") || "No output");
-//       Object.assign(console, original);
+//       const res = await axios.post(executeCodeApi, requestData);
+//       const data = res.data?.output ?? res.data ?? "No output";
+//       setOutput(String(data));
+//       // remember result for this question
+//       setOutputMap((prev) => ({ ...prev, [activeIdx]: String(data) }));
+//       setErrorMap((prev) => ({ ...prev, [activeIdx]: null }));
 //     } catch (e) {
-//       setError(e.message);
+//       const msg = e.response?.data?.error || e.message;
+//       setError(msg);
+//       setErrorMap((prev) => ({ ...prev, [activeIdx]: msg }));
 //     } finally {
-//       setIsRunning(false);
+//       setRunning(false);
 //     }
 //   };
 
-//   const runPython = async () => {
-//     if (!pyodide) return setError("Python not ready");
-//     setIsRunning(true);
-//     setOutput("Running Python…");
+//   const submitQuestion = async () => {
+//     if (!currentQ) return;
+//     setRunning(true);
 //     setError(null);
+//     setOutput("");
+//     const code = activeTab === "javascript" ? jsCode : pyCode;
+//     const requestData = {
+//       language: activeTab,
+//       version: activeTab === "javascript" ? "18.15.0" : "3.10",
+//       files: [{ content: code }],
+//     };
 //     try {
-//       const result = pyodide.runPython(`
-// import sys, io, contextlib
-// @contextlib.contextmanager
-// def cap():
-//     o, e = io.StringIO(), io.StringIO()
-//     oldo, olde = sys.stdout, sys.stderr
-//     sys.stdout, sys.stderr = o, e
-//     try: yield (o, e)
-//     finally: sys.stdout, sys.stderr = oldo, olde
-// with cap() as (out, err):
-//     try:
-//         exec("""${pyCode.replace(/"""/g, '\\"""')}""")
-//     except Exception as ex:
-//         print(ex, file=sys.stderr)
-// out.getvalue() + err.getvalue()
-// `);
-//       setOutput(result || "No output");
+//       const res = await axios.post(executeCodeApi, requestData);
+//       const data = res.data?.output ?? res.data ?? "No output";
+//       setOutput(String(data));
+//       // remember result for this question
+//       setOutputMap((prev) => ({ ...prev, [activeIdx]: String(data) }));
+//       setErrorMap((prev) => ({ ...prev, [activeIdx]: null }));
+//       // Mark question as submitted
+//       setSubmittedMap((prev) => ({ ...prev, [activeIdx]: true }));
 //     } catch (e) {
-//       setError(e.message);
+//       const msg = e.response?.data?.error || e.message;
+//       setError(msg);
+//       setErrorMap((prev) => ({ ...prev, [activeIdx]: msg }));
 //     } finally {
-//       setIsRunning(false);
+//       setRunning(false);
 //     }
 //   };
 
-//   const runCode = () =>
-//     activeTab === "javascript" ? runJavaScript() : runPython();
-//   /* ─────────────────────────────────────────── */
-
-//   /* ===== Decide which UI to render AFTER all hooks ===== */
-//   if (secondsLeft === 0) {
-//     return <SubmittedPage />;
+//   // remove localStorage Data
+//   function removeLocalStorageData() {
+//     if (localStorage.getItem("token")) {
+//       localStorage.removeItem("token");
+//     }
+//     if (localStorage.getItem("secondsLeft")) {
+//       localStorage.removeItem("secondsLeft");
+//     }
+//     displayToast("Test Submitted");
+//     navigate("/submitted");
 //   }
+
+//   const handleMainSubmit = () => {
+//     const submitData = {
+//       name: localStorage.getItem("userName"),
+//       email: localStorage.getItem("userEmail"),
+//       score: 0,
+//     };
+//     const testId = localStorage.getItem("token");
+//     fetch(`${submitTestApi}/${testId}`, {
+//       method: "PATCH",
+//       headers: {
+//         "Content-Type": "application/json",
+//       },
+//       body: JSON.stringify(submitData),
+//     })
+//       .then((response) => response.json())
+//       .then((data) => console.log(data))
+//       .then(removeLocalStorageData())
+//       .catch((error) => console.error("Error:", error));
+//   };
 
 //   return (
 //     <div className={styles.pageContainer}>
-//       {/* LEFT – problem statement */}
-//       <div className={styles.leftContainer}>
-//         <Problem testData={location.state?.testData} />
-//       </div>
+//       {/* ---------- LEFT: prompt & navigation ---------- */}
 
-//       {/* RIGHT – timer + editor/output */}
+//       <div className={styles.leftContainer}>
+//         <Problem
+//           testData={testData}
+//           currentIndex={activeIdx}
+//           setCurrentIndex={setActiveIdx}
+//         />
+//       </div>
+//       {/* ---------- RIGHT: timer + editor ---------- */}
 //       <div className={styles.rightContainer}>
 //         {secondsLeft !== null && (
 //           <div className={styles.timer}>
 //             ⏳ Time Left&nbsp;{mmss(secondsLeft)}
+//             <h3>!!! Every Question Must Be Submitted Individually</h3>
+//             <button onClick={handleMainSubmit} className={styles.submitBtn}>
+//               SUBMIT TEST
+//             </button>
 //           </div>
 //         )}
-
 //         {/* Tabs */}
 //         <div className={styles.tabs}>
 //           <button
@@ -190,52 +237,48 @@
 //             onClick={() => setActiveTab("python")}
 //           >
 //             Python
-//             {pyodideLoading && <span className={styles.miniSpinner}></span>}
 //           </button>
 //         </div>
-
 //         {/* Editor */}
 //         <div className={styles.codeContainer}>
 //           {activeTab === "javascript" ? (
 //             <textarea
 //               value={jsCode}
-//               onChange={(e) => setJsCode(e.target.value)}
+//               onChange={(e) => {
+//                 setJsCode(e.target.value);
+//                 saveBuffer(activeIdx, "js", e.target.value);
+//               }}
+//               // onPaste={(e) => e.preventDefault()}
+//               disabled={running}
 //               className={styles.codeEditor}
-//               disabled={isRunning}
 //             />
 //           ) : (
 //             <textarea
 //               value={pyCode}
-//               onChange={(e) => setPyCode(e.target.value)}
+//               onChange={(e) => {
+//                 setPyCode(e.target.value);
+//                 saveBuffer(activeIdx, "py", e.target.value);
+//               }}
+//               // onPaste={(e) => e.preventDefault()}
+//               disabled={running}
 //               className={styles.codeEditor}
-//               disabled={isRunning || pyodideLoading}
 //             />
 //           )}
-
 //           <button
 //             onClick={runCode}
-//             disabled={
-//               isRunning ||
-//               (activeTab === "python" && (pyodideLoading || !pyodide))
-//             }
+//             disabled={running}
 //             className={styles.runButton}
 //           >
-//             {isRunning ? (
+//             {running ? (
 //               <>
 //                 <span className={styles.spinner}></span>
 //                 Running…
-//               </>
-//             ) : pyodideLoading && activeTab === "python" ? (
-//               <>
-//                 <span className={styles.spinner}></span>
-//                 Loading Python…
 //               </>
 //             ) : (
 //               `Run ${activeTab === "javascript" ? "JavaScript" : "Python"}`
 //             )}
 //           </button>
 //         </div>
-
 //         {/* Output */}
 //         <div className={styles.outputSection}>
 //           <h2 className={styles.outputTitle}>Output:</h2>
@@ -245,9 +288,24 @@
 //             </div>
 //           )}
 //           <pre className={styles.outputDisplay}>
-//             {output ||
-//               `No output yet. Run your ${activeTab} code to see results.`}
+//             {output || `Run your ${activeTab} code to see results.`}
 //           </pre>
+//           <button
+//             onClick={submitQuestion}
+//             disabled={running || submittedMap[activeIdx]}
+//             className={styles.submitBtn}
+//           >
+//             {running ? (
+//               <>
+//                 <span className={styles.spinner}></span>
+//                 Submitting…
+//               </>
+//             ) : submittedMap[activeIdx] ? (
+//               "Submitted"
+//             ) : (
+//               "Submit"
+//             )}
+//           </button>
 //         </div>
 //       </div>
 //     </div>
@@ -255,43 +313,3 @@
 // }
 
 // export default CodeRunner;
-
-import React, { useState } from "react";
-import { executeCodeApi } from "../api/base.api";
-import axios from "axios";
-
-const CodeRunner = () => {
-    const [sourceCode, setScoreCode] = useState("");
-
-    const handleOnChange = (e) => {
-        setScoreCode(e.target.value);
-        // console.log(e.target.value);
-    };
-    async function runCode() {
-        const requestData = {
-            language: "python",
-            version: "3.10",
-            files: [
-                {
-                    content: sourceCode,
-                },
-            ],
-        };
-        try {
-            const response = await axios.post(executeCodeApi, requestData);
-            console.log(response);
-            const data = response.data;
-            console.log("output", data);
-        } catch (error) {
-            console.error(error);
-        }
-    }
-    return (
-        <div>
-            <textarea value={sourceCode} onChange={handleOnChange}></textarea>
-            <button onClick={runCode}>Run Code</button>
-        </div>
-    );
-};
-
-export default CodeRunner;
