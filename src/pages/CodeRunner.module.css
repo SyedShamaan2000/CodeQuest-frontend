@@ -1,501 +1,513 @@
 /* Layout containers */
 .pageContainer {
-  display: flex;
-  align-items: flex-start;
-  gap: 1rem;
-  padding: 1rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 3rem;
+    padding: 1rem;
 }
 
 .leftContainer {
-  width: 300px; /* fixed width for problem panel */
-  flex-shrink: 0;
+    width: 300px; /* fixed width for problem panel */
+    flex-shrink: 0;
 }
 
 .rightContainer {
-  flex: 1; /* fill remaining space for editor/output */
+    flex: 1; /* fill remaining space for editor/output */
 }
 
 /* CodeRunner styles */
 .container {
-  padding: 1.5rem;
-  max-width: 800px;
-  margin: 0 auto;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
-    Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+    padding: 1.5rem;
+    max-width: 800px;
+    margin: 0 auto;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+        Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
 }
 
 .title {
-  font-size: 1.75rem;
-  font-weight: 700;
-  margin-bottom: 1.5rem;
-  color: #2d3748;
-  text-align: center;
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    color: #2d3748;
+    text-align: center;
 }
 
 .tabs {
-  display: flex;
-  margin-bottom: 1rem;
-  border-bottom: 2px solid #e2e8f0;
+    display: flex;
+    margin-bottom: 1rem;
+    border-bottom: 2px solid #e2e8f0;
 }
 
 .tab {
-  padding: 0.75rem 1.5rem;
-  font-size: 1rem;
-  font-weight: 500;
-  background: none;
-  border: none;
-  border-bottom: 2px solid transparent;
-  margin-bottom: -2px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 500;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 .tab:hover {
-  color: #4299e1;
+    color: #4299e1;
 }
 
 .activeTab {
-  color: #3182ce;
-  border-bottom-color: #3182ce;
-  font-weight: 600;
+    color: #3182ce;
+    border-bottom-color: #3182ce;
+    font-weight: 600;
 }
 
 .codeContainer {
-  margin-bottom: 1.5rem;
+    margin-bottom: 1.5rem;
 }
 
 .codeEditor {
-  width: 100%;
-  height: 180px;
-  padding: 0.75rem;
-  font-family: "Menlo", "Monaco", "Courier New", monospace;
-  font-size: 0.9rem;
-  line-height: 1.5;
-  border: 1px solid #e2e8f0;
-  border-radius: 4px;
-  resize: vertical;
-  transition: border-color 0.2s ease;
-  margin-bottom: 1rem;
-  background-color: #f8fafc;
-  color: #1a202c;
+    width: 100%;
+    height: 180px;
+    padding: 0.75rem;
+    font-family: "Menlo", "Monaco", "Courier New", monospace;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    resize: vertical;
+    transition: border-color 0.2s ease;
+    margin-bottom: 1rem;
+    background-color: #f8fafc;
+    color: #1a202c;
 }
 
 .codeEditor:focus {
-  outline: none;
-  border-color: #4299e1;
-  box-shadow: 0 0 0 2px rgba(66, 153, 225, 0.2);
+    outline: none;
+    border-color: #4299e1;
+    box-shadow: 0 0 0 2px rgba(66, 153, 225, 0.2);
 }
 
 .codeEditor::placeholder {
-  color: #a0aec0;
+    color: #a0aec0;
 }
 
 .runButton {
-  padding: 0.6rem 1.2rem;
-  font-size: 1rem;
-  font-weight: 500;
-  color: white;
-  background-color: #4299e1;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 140px;
+    padding: 0.6rem 1.2rem;
+    font-size: 1rem;
+    font-weight: 500;
+    color: white;
+    background-color: #4299e1;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 140px;
 }
 
 .runButton:hover:not(:disabled) {
-  background-color: #3182ce;
+    background-color: #3182ce;
 }
 
 .runButton:disabled {
-  background-color: #a0aec0;
-  cursor: not-allowed;
-  opacity: 0.8;
+    background-color: #a0aec0;
+    cursor: not-allowed;
+    opacity: 0.8;
 }
 
 .outputSection {
-  margin-bottom: 2rem;
+    margin-bottom: 2rem;
 }
 
 .outputTitle {
-  font-size: 1.1rem;
-  font-weight: 600;
-  margin-bottom: 0.5rem;
-  color: white;
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: white;
 }
 
 .errorBox {
-  background-color: #fff5f5;
-  border: 1px solid #feb2b2;
-  border-left: 4px solid #e53e3e;
-  color: #c53030;
-  padding: 0.75rem 1rem;
-  border-radius: 4px;
-  margin-bottom: 0.75rem;
-  font-size: 0.9rem;
-  display: flex;
-  align-items: center;
+    background-color: #fff5f5;
+    border: 1px solid #feb2b2;
+    border-left: 4px solid #e53e3e;
+    color: #c53030;
+    padding: 0.75rem 1rem;
+    border-radius: 4px;
+    margin-bottom: 0.75rem;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
 }
 
 .errorIcon {
-  margin-right: 0.5rem;
+    margin-right: 0.5rem;
 }
 
 .outputDisplay {
-  padding: 1rem;
-  background-color: #2d3748;
-  color: #e2e8f0;
-  border-radius: 4px;
-  font-family: "Menlo", "Monaco", "Courier New", monospace;
-  font-size: 0.9rem;
-  line-height: 1.5;
-  white-space: pre-wrap;
-  word-wrap: break-word;
-  overflow-x: auto;
-  max-height: 300px;
-  overflow-y: auto;
-  border: 1px solid #4a5568;
+    padding: 1rem;
+    background-color: #2d3748;
+    color: #e2e8f0;
+    border-radius: 4px;
+    font-family: "Menlo", "Monaco", "Courier New", monospace;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    overflow-x: auto;
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid #4a5568;
 }
 
 .spinner {
-  display: inline-block;
-  width: 1rem;
-  height: 1rem;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-radius: 50%;
-  border-top-color: white;
-  animation: spin 1s ease-in-out infinite;
-  margin-right: 0.5rem;
+    display: inline-block;
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: white;
+    animation: spin 1s ease-in-out infinite;
+    margin-right: 0.5rem;
 }
 
 .miniSpinner {
-  display: inline-block;
-  width: 0.75rem;
-  height: 0.75rem;
-  border: 1.5px solid rgba(49, 130, 206, 0.3);
-  border-radius: 50%;
-  border-top-color: #3182ce;
-  animation: spin 1s ease-in-out infinite;
-  margin-left: 0.5rem;
+    display: inline-block;
+    width: 0.75rem;
+    height: 0.75rem;
+    border: 1.5px solid rgba(49, 130, 206, 0.3);
+    border-radius: 50%;
+    border-top-color: #3182ce;
+    animation: spin 1s ease-in-out infinite;
+    margin-left: 0.5rem;
 }
 
 @keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .infoSection {
-  background-color: #ebf8ff;
-  border: 1px solid #bee3f8;
-  border-radius: 4px;
-  padding: 1rem;
+    background-color: #ebf8ff;
+    border: 1px solid #bee3f8;
+    border-radius: 4px;
+    padding: 1rem;
 }
 
 .infoTitle {
-  font-size: 1rem;
-  font-weight: 600;
-  margin-bottom: 0.5rem;
-  color: #2c5282;
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: #2c5282;
 }
 
 .infoList {
-  list-style-type: disc;
-  margin-left: 1.5rem;
-  color: #2a4365;
-  font-size: 0.9rem;
-  line-height: 1.6;
+    list-style-type: disc;
+    margin-left: 1.5rem;
+    color: #2a4365;
+    font-size: 0.9rem;
+    line-height: 1.6;
 }
 
 /* Theme transitions */
 .container {
-  transition: background-color 0.3s ease;
+    transition: background-color 0.3s ease;
+}
+
+.btnContainer {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
 }
 
 /* Dark mode support for CodeRunner */
 @media (prefers-color-scheme: dark) {
-  .container {
-    background-color: #1a202c;
-    color: #e2e8f0;
-  }
-  .title {
-    color: #e2e8f0;
-  }
-  .tabs {
-    border-bottom-color: #4a5568;
-  }
-  .tab {
-    color: #cbd5e0;
-  }
-  .tab:hover {
-    color: #63b3ed;
-  }
-  .activeTab {
-    color: #63b3ed;
-    border-bottom-color: #63b3ed;
-  }
-  .codeEditor {
-    background-color: #2d3748;
-    color: #e2e8f0;
-    border-color: #4a5568;
-  }
-  .codeEditor::placeholder {
-    color: #718096;
-  }
-  .infoSection {
-    background-color: #2a4365;
-    border-color: #4299e1;
-    color: #e2e8f0;
-  }
-  .infoTitle {
-    color: #90cdf4;
-  }
-  .infoList {
-    color: #cbd5e0;
-  }
+    .container {
+        background-color: #1a202c;
+        color: #e2e8f0;
+    }
+    .title {
+        color: #e2e8f0;
+    }
+    .tabs {
+        border-bottom-color: #4a5568;
+    }
+    .tab {
+        color: #cbd5e0;
+    }
+    .tab:hover {
+        color: #63b3ed;
+    }
+    .activeTab {
+        color: #63b3ed;
+        border-bottom-color: #63b3ed;
+    }
+    .codeEditor {
+        background-color: #2d3748;
+        color: #e2e8f0;
+        border-color: #4a5568;
+    }
+    .codeEditor::placeholder {
+        color: #718096;
+    }
+    .infoSection {
+        background-color: #2a4365;
+        border-color: #4299e1;
+        color: #e2e8f0;
+    }
+    .infoTitle {
+        color: #90cdf4;
+    }
+    .infoList {
+        color: #cbd5e0;
+    }
 }
 
 /* Responsive design adjustments */
 @media (max-width: 768px) {
-  .container {
-    padding: 1rem;
-  }
-  .title {
-    font-size: 1.5rem;
-  }
-  .tab {
-    padding: 0.5rem 1rem;
-    font-size: 0.9rem;
-  }
+    .container {
+        padding: 1rem;
+    }
+    .title {
+        font-size: 1.5rem;
+    }
+    .tab {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+    }
 }
 
 /* CodeRunner.module.css */
 .timer {
-  display: flex;
-  width: 100%;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 1.2rem;
-  font-weight: bold;
-  margin-bottom: 1rem;
-  color: #e53e3e;
-  text-align: center;
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+    color: #e2e8f0;
+    text-align: center;
 }
 
 /* Problem component styles */
 .problemWrapper {
-  width: 100%;
-  height: 90vh;
-  display: flex;
-  flex-direction: column;
-  padding: 12px;
+    width: 100%;
+    height: 90vh;
+    display: flex;
+    flex-direction: column;
+    padding: 12px;
 }
 
 /* Question navigation container */
 .questionNav {
-  display: flex;
-  justify-content: flex-start;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-bottom: 20px;
+    display: flex;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
 }
 
 /* Individual question navigation button */
 .questionDot {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  background-color: #eee;
-  color: #333;
-  border: none;
-  cursor: pointer;
-  transition: background-color 0.2s;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    background-color: #eee;
+    color: #333;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s;
 }
 
 .questionDot:hover {
-  background-color: #ddd;
+    background-color: #ddd;
 }
 
 /* Style for active question dot */
 .activeDot {
-  background-color: #3182ce;
-  color: white;
-  transform: scale(1.1);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background-color: #3182ce;
+    color: white;
+    transform: scale(1.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 /* Card container for the current question */
 .questionCard {
-  background-color: white;
-  border-radius: 6px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  padding: 16px;
-  border-left: 4px solid #3182ce;
-  overflow-y: auto;
-  flex: 1;
+    background-color: white;
+    border-radius: 6px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    padding: 16px;
+    border-left: 4px solid #3182ce;
+    overflow-y: auto;
+    flex: 1;
 }
 
 /* Question title */
 .questionTitle {
-  font-size: 18px;
-  font-weight: bold;
-  margin-bottom: 12px;
-  color: #2d3748;
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 12px;
+    color: #2d3748;
 }
 
 /* Question statement */
 .questionStatement {
-  font-size: 15px;
-  line-height: 1.5;
-  margin-bottom: 16px;
-  color: #4a5568;
-  white-space: pre-wrap;
+    font-size: 15px;
+    line-height: 1.5;
+    margin-bottom: 16px;
+    color: #4a5568;
+    white-space: pre-wrap;
 }
 
 /* Constraints section */
 .constraintsBox {
-  background-color: #f7fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 4px;
-  padding: 12px;
-  margin-bottom: 16px;
+    background-color: #f7fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    padding: 12px;
+    margin-bottom: 16px;
 }
 
 /* Subtitle for sections */
 .subTitle {
-  font-size: 15px;
-  font-weight: 600;
-  margin-bottom: 8px;
-  color: #2d3748;
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #2d3748;
 }
 
 /* Constraints text */
 .constraintsText {
-  white-space: pre-wrap;
-  color: #4a5568;
+    white-space: pre-wrap;
+    color: #4a5568;
 }
 
 /* Test cases section */
 .testCasesSection {
-  margin-bottom: 8px;
+    margin-bottom: 8px;
 }
 
 /* Test cases list */
 .testCasesList {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
 
 /* Individual test case */
 .testCase {
-  background-color: #f7fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 4px;
-  padding: 12px;
+    background-color: #f7fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    padding: 12px;
 }
 
 /* Row for input/output in a test case */
 .testCaseRow {
-  margin-bottom: 8px;
+    margin-bottom: 8px;
 }
 
 /* Label for test case input/output */
 .testCaseLabel {
-  font-weight: 600;
-  color: #4a5568;
-  margin-right: 8px;
+    font-weight: 600;
+    color: #4a5568;
+    margin-right: 8px;
 }
 
 /* Value for test case input/output */
 .testCaseValue {
-  font-family: "Menlo", "Monaco", "Courier New", monospace;
-  background-color: #edf2f7;
-  padding: 2px 5px;
-  border-radius: 3px;
-  word-break: break-all;
-  display: inline-block;
-  font-size: 13px;
+    font-family: "Menlo", "Monaco", "Courier New", monospace;
+    background-color: #edf2f7;
+    padding: 2px 5px;
+    border-radius: 3px;
+    word-break: break-all;
+    display: inline-block;
+    font-size: 13px;
+}
+
+.conditionContainer {
+    color: #e2e8f0;
+    margin-top: 10px;
+    margin-bottom: 10px;
 }
 
 .submitBtn {
-  background-color: #3182ce;
-  color: white;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 16px;
-  font-weight: bold;
-  transition: background-color 0.3s ease;
-  margin-top: 20px;
+    background-color: #3182ce;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    /* margin-top: 20px; */
 }
 
 /* Dark mode support for Problem component */
 @media (prefers-color-scheme: dark) {
-  .questionDot {
-    background-color: #2d3748;
-    color: #e2e8f0;
-  }
+    .questionDot {
+        background-color: #2d3748;
+        color: #e2e8f0;
+    }
 
-  .questionDot:hover {
-    background-color: #4a5568;
-  }
+    .questionDot:hover {
+        background-color: #4a5568;
+    }
 
-  .activeDot {
-    background-color: #4299e1;
-  }
+    .activeDot {
+        background-color: #4299e1;
+    }
 
-  .questionCard {
-    background-color: #1a202c;
-    border-color: #4299e1;
-    width: 30ch;
-    overflow-wrap: break-word;
-    word-break: break-word;
-  }
+    .questionCard {
+        background-color: #1a202c;
+        border-color: #4299e1;
+        width: 30ch;
+        overflow-wrap: break-word;
+        word-break: break-word;
+    }
 
-  .questionTitle {
-    color: #e2e8f0;
-  }
+    .questionTitle {
+        color: #e2e8f0;
+    }
 
-  .questionStatement {
-    color: #cbd5e0;
-  }
+    .questionStatement {
+        color: #cbd5e0;
+    }
 
-  .constraintsBox {
-    background-color: #2d3748;
-    border-color: #4a5568;
-  }
+    .constraintsBox {
+        background-color: #2d3748;
+        border-color: #4a5568;
+    }
 
-  .subTitle {
-    color: #e2e8f0;
-  }
+    .subTitle {
+        color: #e2e8f0;
+    }
 
-  .constraintsText {
-    color: #cbd5e0;
-  }
+    .constraintsText {
+        color: #cbd5e0;
+    }
 
-  .testCase {
-    background-color: #2d3748;
-    border-color: #4a5568;
-  }
+    .testCase {
+        background-color: #2d3748;
+        border-color: #4a5568;
+    }
 
-  .testCaseLabel {
-    color: #e2e8f0;
-  }
+    .testCaseLabel {
+        color: #e2e8f0;
+    }
 
-  .testCaseValue {
-    background-color: #4a5568;
-    color: #e2e8f0;
-  }
+    .testCaseValue {
+        background-color: #4a5568;
+        color: #e2e8f0;
+    }
 }
